@@ -1,0 +1,62 @@
+{
+  "overall_acc_before": 0.8182,
+  "overall_acc_after": 0.7937,
+  "sex_audit_before": {
+    "Female": {
+      "accuracy": 0.895,
+      "selection_rate": 0.033,
+      "tpr": 0.195
+    },
+    "Male": {
+      "accuracy": 0.781,
+      "selection_rate": 0.213,
+      "tpr": 0.491
+    }
+  },
+  "sex_audit_after": {
+    "Female": {
+      "accuracy": 0.841,
+      "selection_rate": 0.155,
+      "tpr": 0.479
+    },
+    "Male": {
+      "accuracy": 0.771,
+      "selection_rate": 0.154,
+      "tpr": 0.38
+    }
+  },
+  "race_audit_before": {
+    "Amer-Indian-Eskimo": {
+      "accuracy": 0.912,
+      "selection_rate": 0.018,
+      "tpr": 0.1
+    },
+    "Asian-Pac-Islander": {
+      "accuracy": 0.811,
+      "selection_rate": 0.137,
+      "tpr": 0.404
+    },
+    "Black": {
+      "accuracy": 0.905,
+      "selection_rate": 0.056,
+      "tpr": 0.336
+    },
+    "Other": {
+      "accuracy": 0.882,
+      "selection_rate": 0.071,
+      "tpr": 0.357
+    },
+    "White": {
+      "accuracy": 0.807,
+      "selection_rate": 0.168,
+      "tpr": 0.453
+    }
+  },
+  "demographic_parity_gap_before": 0.18,
+  "demographic_parity_gap_after": 0.001,
+  "equal_opportunity_gap_before": 0.296,
+  "thresholds_after_mitigation": {
+    "Female": 0.182,
+    "Male": 0.597
+  }
+}
