@@ -2,14 +2,14 @@
 
 
 I built a model that predicts if someone earns more than $50K/year, then checked
-if the model treats men and women (and different races) unfairly — and found that
+if the model treats men and women (and different races) unfairly - and found that
 it does. Then I fixed it, and measured what that fix cost in accuracy.
 
 
 
 
 ## The dataset
-UCI Adult Income dataset — real US Census data from 1994. About 45,000 people.
+UCI Adult Income dataset - real US Census data from 1994. About 45,000 people.
 For each person we know: age, education, job type, hours worked, marital status,
 sex, race, etc. The task: predict if they earn more than $50K/year.
 
@@ -19,22 +19,22 @@ sex, race, etc. The task: predict if they earn more than $50K/year.
 
 
 
-### Step 1 — Cleaned the data
+### Step 1 - Cleaned the data
 Removed rows with missing values, cleaned up text formatting, converted the target
 (income) into a simple 0/1 (0 = earns ≤$50K, 1 = earns >$50K).
 
-### Step 2 — Trained a normal model, no fairness considerations
+### Step 2 - Trained a normal model, no fairness considerations
 Used Logistic Regression (a standard, simple classification model) to predict
-income. This is the "baseline" — a model built the normal way, the way most
+income. This is the "baseline"  - a model built the normal way, the way most
 people build models without thinking about fairness at all.
 
 **Result: 81.8% accuracy.** Sounds good on its own.
 
-### Step 3 — Checked if the model treats groups differently
+### Step 3  -Checked if the model treats groups differently
 This is the actual "audit" part. I split the test data by sex and by race, and
 for each group I checked two things:
 
-- **Selection rate** — what % of this group did the model predict as high income?
+- **Selection rate**-what % of this group did the model predict as high income?
   If the model is fair, this should be roughly similar across groups.
 - **True positive rate** — among people in this group who ACTUALLY earn >$50K,
   what % did the model correctly identify?
@@ -83,10 +83,10 @@ is exactly what a company would want to see.
 - `fairness_audit.py` — the full pipeline. Run this first: `python3 fairness_audit.py`
   It cleans data, trains the model, runs the audit, applies the fix, and saves
   the results to `results_summary.json`.
-- `app.py` — a simple visual dashboard (Streamlit) showing all of the above, plus
+- `app.py` - a simple visual dashboard (Streamlit) showing all of the above, plus
   a page where you can enter a fake profile and see what the model predicts.
   Run with: `streamlit run app.py`
-- `adult.csv` — the dataset
+- `adult.csv` - the dataset
 - `results_summary.json` — saved numbers from the audit, used by the dashboard
 
 ## How to run it
