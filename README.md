@@ -1,100 +1,125 @@
-# Bias & Fairness Audit of an Income Prediction Model
+# Bias and Fairness Audit of an Income Prediction Model
 
+This project looks at whether an income prediction model treats different groups of people fairly. I used the UCI Adult Income dataset to build a model, check for bias, and then apply a simple fairness fix to see how it changes the results.
 
-I built a model that predicts if someone earns more than $50K/year, then checked
-if the model treats men and women (and different races) unfairly - and found that
-it does. Then I fixed it, and measured what that fix cost in accuracy.
+## About the dataset
 
+The project uses the **UCI Adult Income dataset**, which contains US Census data from 1994. It has around **45,000 records**.
 
+Each record includes information like:
 
+- Age
+- Education
+- Occupation
+- Hours worked per week
+- Marital status
+- Sex
+- Race
 
-## The dataset
-UCI Adult Income dataset - real US Census data from 1994. About 45,000 people.
-For each person we know: age, education, job type, hours worked, marital status,
-sex, race, etc. The task: predict if they earn more than $50K/year.
+The goal is to predict whether a person earns **more than $50,000 per year**.
 
+## What I did
 
+### 1. Cleaned the data
 
+- Removed rows with missing values.
+- Cleaned text formatting.
+- Converted the income column into a binary value:
+  - `0` = income is **$50K or less**
+  - `1` = income is **more than $50K**
 
+### 2. Trained a baseline model
 
+I trained a **Logistic Regression** model without making any fairness changes.
 
+**Accuracy:** **81.8%**
 
-### Step 1 - Cleaned the data
-Removed rows with missing values, cleaned up text formatting, converted the target
-(income) into a simple 0/1 (0 = earns ≤$50K, 1 = earns >$50K).
+This is the baseline model that is used for comparison.
 
-### Step 2 - Trained a normal model, no fairness considerations
-Used Logistic Regression (a standard, simple classification model) to predict
-income. This is the "baseline"  - a model built the normal way, the way most
-people build models without thinking about fairness at all.
+### 3. Checked for bias
 
-**Result: 81.8% accuracy.** Sounds good on its own.
+I tested the model separately for different groups based on **sex** and **race**.
 
-### Step 3  -Checked if the model treats groups differently
-This is the actual "audit" part. I split the test data by sex and by race, and
-for each group I checked two things:
+I used two fairness measures:
 
-- **Selection rate**-what % of this group did the model predict as high income?
-  If the model is fair, this should be roughly similar across groups.
-- **True positive rate** — among people in this group who ACTUALLY earn >$50K,
-  what % did the model correctly identify?
+- **Selection Rate** – Percentage of people predicted as earning more than $50K.
+- **True Positive Rate** – Percentage of actual high earners that the model correctly predicted.
 
-**What I found:**
-- Model predicted 21.3% of men as high earners, but only 3.3% of women.
-- That's an 18-percentage-point gap. This is a big, real bias.
-- Among people who genuinely earn >$50K, the model correctly caught 49% of men
-  but only 19.5% of women. So the model isn't just reflecting reality — it's
-  actively worse at recognizing successful women.
+### Results
 
-### Step 4 — Found WHY the bias exists — a hidden leak
-Here's the part most beginners miss. I checked: even if I never told the model
-someone's sex, could it still figure it out from other columns?
+**Selection Rate**
 
-Answer: yes. There's a column called "relationship" (values like Husband, Wife,
-Unmarried, Own-child). It turns out "Husband" is 99.99% male and "Wife" is 99.95%
-female. So even without a "sex" column, the model can basically reconstruct
-someone's sex through "relationship" and discriminate anyway.
+- Men predicted as high income: **21.3%**
+- Women predicted as high income: **3.3%**
 
-This is called a **proxy variable** — a column that indirectly reveals a protected
-attribute like sex or race. It's the reason "just delete the sensitive column" does
-NOT actually fix bias in real systems. This is the single most important insight
-in the whole project — mention it in interviews.
+Gap: **18 percentage points**
 
-### Step 5 — Fixed the bias (a bit) and measured the cost
-I used a technique called **threshold adjustment**. Here's what that means simply:
+**True Positive Rate**
 
-Normally, a model predicts "high income" if its confidence score is above 50%.
-That single 50% cutoff is the same for everyone. Instead, I set a DIFFERENT cutoff
-for men and women — a lower cutoff for women, a higher one for men — so that both
-groups end up getting approved at roughly the same rate.
+- Men: **49%**
+- Women: **19.5%**
 
-**Result after the fix:**
-- The 18% gap between men and women dropped to basically 0.1% — nearly fixed.
-- But overall accuracy dropped from 81.8% to 79.4% — a real cost of 2.4 points.
+The model was much better at identifying high-income men than high-income women.
 
-This is the most important finding of the whole project: **making a model fairer
-is not free. It costs accuracy.** Whether that tradeoff is worth it is a business
-decision, not something I can answer with code — but showing this tradeoff clearly
-is exactly what a company would want to see.
+### 4. Found the reason for the bias
 
----
+I checked if the model could still guess someone's sex after removing the `sex` column.
 
-## Files in this project
-- `fairness_audit.py` — the full pipeline. Run this first: `python3 fairness_audit.py`
-  It cleans data, trains the model, runs the audit, applies the fix, and saves
-  the results to `results_summary.json`.
-- `app.py` - a simple visual dashboard (Streamlit) showing all of the above, plus
-  a page where you can enter a fake profile and see what the model predicts.
-  Run with: `streamlit run app.py`
-- `adult.csv` - the dataset
-- `results_summary.json` — saved numbers from the audit, used by the dashboard
+It could.
 
-## How to run it
+The `relationship` column contains values like **Husband**, **Wife**, **Unmarried**, and **Own-child**. This column is strongly connected to a person's sex, so the model can still learn that information.
+
+This is called a **proxy variable**. It indirectly reveals a protected attribute, even when that attribute is removed.
+
+This was the biggest learning from the project because it shows why simply deleting a sensitive column is not enough.
+
+### 5. Reduced the bias
+
+I used **threshold adjustment**.
+
+Instead of using the same prediction cutoff for everyone, I used different cutoffs for men and women so that both groups had a similar selection rate.
+
+### Results after the fix
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Accuracy | **81.8%** | **79.4%** |
+| Selection rate gap | **18.0%** | **0.1%** |
+
+The fairness gap became much smaller, but the model lost **2.4% accuracy**.
+
+This shows that improving fairness can come with a small drop in overall performance.
+
+## Project files
+
+- **fairness_audit.py** – Cleans the data, trains the model, checks fairness, applies the fairness fix, and saves the results.
+- **app.py** – Streamlit dashboard that shows the audit results and lets you try predictions with your own input.
+- **adult.csv** – Dataset used in the project.
+- **results_summary.json** – Stores the results used by the dashboard.
+
+## How to run the project
+
+### Install the required libraries
+
+```bash
 pip install pandas numpy scikit-learn shap streamlit --break-system-packages
+```
+
+### Run the fairness audit
+
+```bash
 python3 fairness_audit.py
+```
+
+### Open the dashboard
+
+```bash
 streamlit run app.py
----
+```
 
+## What I learned
 
-
-
+- A model can be accurate but still treat some groups unfairly.
+- Removing a sensitive feature does not always remove bias because of proxy variables.
+- Fairness can be improved, but it may reduce accuracy.
+- Measuring both fairness and accuracy helps understand the trade-off before using a model in a real application.
